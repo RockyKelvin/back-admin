@@ -16,7 +16,7 @@
              <el-button type="danger" icon="el-icon-delete" @click="onDelete">删除分类</el-button>
           </el-col>
         </el-row>
-          <!-- Goods List////////////////////////////////////////////////////// -->
+          <!-- Type List////////////////////////////////////////////////////// -->
         <div class="table">
          <el-table
           :data="goodsList"

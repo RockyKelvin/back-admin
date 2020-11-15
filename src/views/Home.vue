@@ -128,7 +128,7 @@ export default {
           ]
         }
       ],
-      activeIndex: 'goods_list',
+      activeIndex: 'type_list',
       isCollapsed: false,
       asideWidth: '200px'
     }
