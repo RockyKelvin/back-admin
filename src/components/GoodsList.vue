@@ -155,14 +155,27 @@
           </div>
         </el-card>
         <el-dialog
-          title="提示"
+          title="创建规格"
           :visible.sync="dialogVisible"
           width="30%"
           :before-close="handleClose">
-          <span>这是一段信息</span>
+          <el-form :model="form" label-width="100px" label-position="right">
+            <el-form-item label="商品名称" required>
+                <el-col :span="18"><el-input v-model="form.title"></el-input></el-col>
+            </el-form-item>
+            <el-form-item label="商品价格" required>
+                <el-col :span="18"><el-input v-model="form.price"></el-input></el-col>
+            </el-form-item>
+            <el-form-item label="商品库存" required>
+                <el-col :span="18"><el-input v-model="form.stock"></el-input></el-col>
+            </el-form-item>
+            <el-form-item label="商品描述">
+                <el-input v-model="form.description"></el-input>
+            </el-form-item>
+          </el-form>
           <span slot="footer" class="dialog-footer">
             <el-button @click="dialogVisible = false">取 消</el-button>
-            <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
+            <el-button type="primary" @click="submitAddSku">确 定</el-button>
           </span>
         </el-dialog>
     </div>
@@ -183,7 +196,6 @@ export default {
       formData: null,
       dialogFormVisible: false,
       updateFormVisible: false,
-      skusProductId: null,
       dialogVisible: false,
       form: {
         product_id: '',
@@ -212,9 +224,12 @@ export default {
     },
     // add Sku/////////////////////////////////////////
     addSku (id) {
-      this.skusProductId = id
+      this.form.product_id = id
       this.dialogVisible = true
-      console.log(id)
+    },
+    submitAddSku () {
+      console.log(this.form)
+      this.dialogVisible = false
     },
     // editItem////////////////////////////////////////
     editItem (val) {
