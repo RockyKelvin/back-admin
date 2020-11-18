@@ -10,7 +10,7 @@
     <el-card class="box-card">
          <el-row>
           <el-col :span="2">
-            <el-button type="primary" @click="newCreate()">+ 新增分类</el-button>
+            <el-button type="primary" icon="el-icon-plus" @click="newCreate()">新增分类</el-button>
           </el-col>
           <el-col :span="2">
              <el-button type="danger" icon="el-icon-delete" @click="onDelete">删除分类</el-button>
@@ -21,6 +21,7 @@
          <el-table
           :data="goodsList"
           border
+          stripe
           row-key="id"
           style="width: 100%"
            default-expand-all
@@ -31,26 +32,43 @@
             width="55">
           </el-table-column>
           <el-table-column
+            prop="id"
+            label="ID"
+            width="100">
+          </el-table-column>
+          <el-table-column
+            label="图片"
+            width="80">
+            <template slot-scope="scope">
+              <img :src="scope.row.img" width="50px" height="50px" />
+            </template>
+          </el-table-column>
+          <el-table-column
             prop="title"
             label="分类名称"
-            width="600">
+            width="400">
+          </el-table-column>
+           <el-table-column
+            prop="ord"
+            label="排序"
+            width="100">
           </el-table-column>
           <el-table-column
             label="是否显示"
             width="180">
            <template slot-scope="scope">
-                <el-switch
-                    v-model="scope.row.status"
-                    active-color="#13ce66"
-                    inactive-color="#ff4949"
-                    @change = "switchChange(scope.row)"
-                    >
-                </el-switch>
+              <el-switch
+                  v-model="scope.row.status"
+                  active-color="#13ce66"
+                  inactive-color="#ff4949"
+                  @change = "updateSwitch"
+                  >
+              </el-switch>
            </template>
           </el-table-column>
           <el-table-column
-            prop="updated_at"
-            label="修改日期"
+            prop="created_at"
+            label="创建日期"
             width="300">
           </el-table-column>
           <el-table-column label="操作">
@@ -67,36 +85,45 @@
                  <el-col :span="12"><el-input v-model="form.ord"></el-input></el-col>
             </el-form-item>
             <el-form-item label="上级">
-              <el-col :span="12">
-                <el-select v-model="form.pid" placeholder="请选择" @change="handleSelect">
-                  <el-option-group label="一级分类">
-                    <el-option label="创建一级根节点" :value="0"></el-option>
-                  </el-option-group>
-                  <el-option-group label="二级分类">
-                    <el-option
-                      v-for="item in goodsList"
-                      :key="item.id"
-                      :label="item.title"
-                      :value="item.id"
-                      >
-                    </el-option>
-                  </el-option-group>
-                </el-select>
-              </el-col>
+              <el-select v-model="form.pid" placeholder="请选择" @change="handleSelect">
+                <el-option-group label="一级分类">
+                  <el-option label="创建一级根节点" :value="0"></el-option>
+                </el-option-group>
+                <el-option-group label="二级分类">
+                  <el-option
+                    v-for="item in goodsList"
+                    :key="item.id"
+                    :label="item.title"
+                    :value="item.id"
+                    >
+                  </el-option>
+                </el-option-group>
+              </el-select>
             </el-form-item>
             <el-form-item label="分类名称" required>
-                 <el-col :span="18"><el-input v-model="form.title"></el-input></el-col>
+               <el-col :span="18"><el-input v-model="form.title"></el-input></el-col>
             </el-form-item>
             <el-form-item label="分类描述">
                 <el-input v-model="form.des"></el-input>
             </el-form-item>
             <el-form-item label="是否显示">
-              <el-col :span="8">
                 <el-radio-group v-model="form.status">
                   <el-radio :label="1">是</el-radio>
                   <el-radio :label="0">否</el-radio>
                 </el-radio-group>
-              </el-col>
+            </el-form-item>
+            <el-form-item label="图片">
+                <el-upload
+                  class="upload-demo"
+                  action=""
+                  :auto-upload = "false"
+                  :http-request = "uploadImg"
+                  :limit="1"
+                  ref = "imgupload"
+                  >
+                  <el-button size="small" type="primary">点击上传</el-button>
+                  <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+                </el-upload>
             </el-form-item>
           </el-form>
           <div slot="footer" class="dialog-footer">
@@ -135,12 +162,27 @@
                 <el-input v-model="form.des"></el-input>
             </el-form-item>
             <el-form-item label="是否显示">
-              <el-col :span="8">
-                <el-radio-group v-model="form.status">
-                  <el-radio :label="1">是</el-radio>
-                  <el-radio :label="0">否</el-radio>
-                </el-radio-group>
-              </el-col>
+              <el-switch
+                  v-model="form.status"
+                  active-color="#13ce66"
+                  inactive-color="#ff4949"
+                  @change = "updateSwitch"
+                  >
+              </el-switch>
+            </el-form-item>
+            <el-form-item label="图片">
+              <el-upload
+                class="upload-demo"
+                action=""
+                :auto-upload = "false"
+                :http-request = "uploadImg"
+                ref = "updateImgupload"
+                :file-list="fileList"
+                :limit="1"
+                >
+                <el-button size="small" type="primary">点击上传</el-button>
+                <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+              </el-upload>
             </el-form-item>
           </el-form>
           <div slot="footer" class="dialog-footer">
@@ -149,21 +191,6 @@
           </div>
         </el-dialog>
       </div>
-       <!-- //////分页器、、、、、、、、、、、、、、、、、、、、、、、、、、、、、//// -->
-       <!-- 此例是一个完整的用例，使用了size-change和current-change
-       事件来处理页码大小和当前页变动时候触发的事件。
-       page-sizes接受一个整型数组，数组元素为展示的选择每页显示个数的选项，
-       [100, 200, 300, 400]表示四个选项，每页显示 100 个，200 个，300 个
-       或者 400 个。 -->
-        <el-pagination
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-        :current-page="currentPage"
-        :page-sizes="[8, 6, 7, 5]"
-        :page-size="pagesize"
-        layout="total, sizes, prev, pager, next, jumper"
-        :total="total">
-        </el-pagination>
     </el-card>
  </div>
 </template>
@@ -173,9 +200,6 @@ export default {
   data () {
     return {
       goodsList: [],
-      pagesize: 8,
-      currentPage: 1,
-      total: 0,
       multipleSelection: [],
       form: {
         pid: 0,
@@ -184,6 +208,7 @@ export default {
         status: 1,
         des: ''
       },
+      fileList: [],
       formData: null,
       dialogFormVisible: false,
       updateFormVisible: false,
@@ -203,15 +228,6 @@ export default {
         })
         .catch(_ => {})
     },
-    // 当前页变化触发
-    handleSizeChange (pagesize) {
-      this.pagesize = pagesize
-      this.getHouseList()
-    },
-    handleCurrentChange (currentPage) {
-      this.currentPage = currentPage
-      this.getHouseList()
-    },
     /// checkbox -----////////////////////////////////////////////////////////
     toggleSelection (rows) {
       if (rows) {
@@ -225,6 +241,10 @@ export default {
     handleSelectionChange (val) {
       this.multipleSelection = val
     },
+    /// upload Img///////////////////////////////////////////////////
+    uploadImg (pic) {
+      this.formData.append('pic', pic.file)
+    },
     /// /////////////////////////////////////////////////////////////
     newCreate () {
       this.dialogFormVisible = true
@@ -234,11 +254,14 @@ export default {
         ord: 0,
         status: 1
       }
+      this.fileList = []
     },
     async onCreate () {
       this.formData = new FormData()
+      this.$refs.imgupload.submit()
       this.formData.append('form', JSON.stringify(this.form))
       const { data: res } = await this.$HTTP.post('cate/store', this.formData)
+      console.log(res)
       if (res.status === 200) {
         this.$message.success(res.msg)
       } else {
@@ -275,10 +298,12 @@ export default {
       }
       this.updateFormVisible = true
       this.form = { ...item }
+      this.fileList = []
       console.log(this.form)
     },
     async getUpdate () {
       this.formData = new FormData()
+      this.$refs.updateImgupload.submit()
       this.formData.append('form', JSON.stringify(this.form))
       const { data: res } = await this.$HTTP.post('cate/update', this.formData)
       if (res.status === 200) {
@@ -312,6 +337,10 @@ export default {
       } else {
         this.$message.error('分类删除失败')
       }
+    },
+    // update switch
+    updateSwitch (val) {
+      this.form.status = val
     },
     // switch change
     async switchChange (val) {
@@ -359,5 +388,8 @@ export default {
 }
 .el-icon-arrow-down {
   font-size: 12px;
+}
+.pages{
+  text-align: center;
 }
 </style>

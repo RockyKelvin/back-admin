@@ -145,7 +145,7 @@ export default {
   }
 }
 </script>
-<style>
+<style lang="less" scoped>
 .el-aside{
   min-width:65px;
 }
@@ -231,14 +231,8 @@ export default {
 .el-main {
   background-color: #E9EEF3;
   color: #333;
-  text-align: center;
   line-height: 160px;
 }
-
-body > .el-container {
-  margin-bottom: 40px;
-}
-
 .el-container:nth-child(5) .el-aside,
 .el-container:nth-child(6) .el-aside {
   line-height: 260px;

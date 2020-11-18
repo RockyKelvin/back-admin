@@ -39,6 +39,21 @@ const routes = [
         path: '/team_leader',
         name: 'TeamLeader',
         component: () => import('../components/TeamLeader.vue')
+      },
+      {
+        path: '/create_product',
+        name: 'CreateProduct',
+        component: () => import('../components/CreateProduct.vue')
+      },
+      {
+        path: '/edit_goods',
+        name: 'EditGoods',
+        component: () => import('../components/EditGoods.vue')
+      },
+      {
+        path: '/goods_detail',
+        name: 'GoodsDetail',
+        component: () => import('../components/GoodsDetail.vue')
       }
     ]
   },
