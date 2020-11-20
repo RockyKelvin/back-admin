@@ -121,6 +121,11 @@ export default {
               path: 'user_list'
             },
             {
+              name: '订单管理',
+              pid: 3,
+              path: 'order_list'
+            },
+            {
               name: '团长管理',
               pid: 3,
               path: 'team_leader'

@@ -24,7 +24,7 @@
           stripe
           row-key="id"
           style="width: 100%"
-           default-expand-all
+          default-expand-all
           :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
           @selection-change="handleSelectionChange">
           <el-table-column
@@ -79,7 +79,7 @@
           </el-table-column>
         </el-table>
         <!-- create new categoray -->
-        <el-dialog title="创建分类" :visible.sync="dialogFormVisible" width="30%">
+        <el-dialog title="创建分类" :visible.sync="dialogFormVisible" width="30%" >
           <el-form :model="form" label-width="100px" label-position="right">
             <el-form-item label="排序">
                  <el-col :span="12"><el-input v-model="form.ord"></el-input></el-col>

@@ -75,8 +75,8 @@
                           </el-table-column>
                           <el-table-column label="操作">
                             <template slot-scope="scope">
-                                <el-button type="danger" icon="el-icon-delete" size="mini" circle @click="deleteRow(scope.row.id)"></el-button>
-                                <el-button type="primary" icon="el-icon-edit" size="mini" circle @click="editItem(scope.row)"></el-button>
+                                <el-button type="danger" icon="el-icon-delete" size="mini" circle @click="deleteSku(scope.row.id)"></el-button>
+                                <el-button type="primary" icon="el-icon-edit" size="mini" circle @click="editSku(scope.row)"></el-button>
                             </template>
                           </el-table-column>
                         </el-table>
@@ -159,23 +159,47 @@
           :visible.sync="dialogVisible"
           width="30%"
           :before-close="handleClose">
-          <el-form :model="form" label-width="100px" label-position="right">
-            <el-form-item label="商品名称" required>
+          <el-form :model="form" label-width="100px" label-position="right" :rules="rules" ref="addSkuruleForm">
+            <el-form-item label="商品名称" prop="title">
                 <el-col :span="18"><el-input v-model="form.title"></el-input></el-col>
             </el-form-item>
-            <el-form-item label="商品价格" required>
-                <el-col :span="18"><el-input v-model="form.price"></el-input></el-col>
+            <el-form-item label="商品价格" prop="price">
+                <el-col :span="18"><el-input v-model.number="form.price"></el-input></el-col>
             </el-form-item>
-            <el-form-item label="商品库存" required>
-                <el-col :span="18"><el-input v-model="form.stock"></el-input></el-col>
+            <el-form-item label="商品库存" prop="stock">
+                <el-col :span="18"><el-input v-model.number="form.stock"></el-input></el-col>
             </el-form-item>
-            <el-form-item label="商品描述">
+            <el-form-item label="商品描述" prop="description">
                 <el-input v-model="form.description"></el-input>
             </el-form-item>
           </el-form>
           <span slot="footer" class="dialog-footer">
             <el-button @click="dialogVisible = false">取 消</el-button>
             <el-button type="primary" @click="submitAddSku">确 定</el-button>
+          </span>
+        </el-dialog>
+        <el-dialog
+          title="修改规格"
+          :visible.sync="editDialogVisible"
+          width="30%"
+          :before-close="handleClose">
+          <el-form :model="form" label-width="100px" label-position="right" :rules="rules" ref="editSkuruleForm">
+            <el-form-item label="商品名称" prop="title">
+                <el-col :span="18"><el-input v-model="form.title"></el-input></el-col>
+            </el-form-item>
+            <el-form-item label="商品价格" prop="price">
+                <el-col :span="18"><el-input v-model.number="form.price"></el-input></el-col>
+            </el-form-item>
+            <el-form-item label="商品库存" prop="stock">
+                <el-col :span="18"><el-input v-model.number="form.stock"></el-input></el-col>
+            </el-form-item>
+            <el-form-item label="商品描述" prop="description">
+                <el-input v-model="form.description"></el-input>
+            </el-form-item>
+          </el-form>
+          <span slot="footer" class="dialog-footer">
+            <el-button @click="editDialogVisible = false">取 消</el-button>
+            <el-button type="primary" @click="submitEditSku">确 定</el-button>
           </span>
         </el-dialog>
     </div>
@@ -197,12 +221,32 @@ export default {
       dialogFormVisible: false,
       updateFormVisible: false,
       dialogVisible: false,
+      editDialogVisible: false,
       form: {
+        id: null,
         product_id: '',
         title: '',
         description: '',
         price: '',
         stock: ''
+      },
+      rules: {
+        title: [
+          { required: true, message: '请输入商品名称', trigger: 'blur' },
+          { min: 3, max: 30, message: '长度在 3 到 30 个字符', trigger: 'blur' }
+        ],
+        price: [
+          { required: true, message: '价格不能为空' },
+          { type: 'number', message: '价格必须为数字值' }
+        ],
+        stock: [
+          { required: true, message: '商品描述不能为空' },
+          { type: 'number', message: '商品描述必须为数字值' }
+        ],
+        description: [
+          { required: true, message: '请输入商品描述', trigger: 'blur' },
+          { min: 3, max: 300, message: '长度在 3 到 300 个字符', trigger: 'blur' }
+        ]
       }
     }
   },
@@ -224,12 +268,78 @@ export default {
     },
     // add Sku/////////////////////////////////////////
     addSku (id) {
-      this.form.product_id = id
+      this.form = {
+        product_id: id,
+        title: '',
+        description: '',
+        price: '',
+        stock: ''
+      }
       this.dialogVisible = true
     },
-    submitAddSku () {
-      console.log(this.form)
-      this.dialogVisible = false
+    async submitAddSku () {
+      this.$refs.addSkuruleForm.validate(async (valid) => {
+        if (valid) {
+          this.dialogVisible = false
+          const { data: res } = await this.$HTTP.post('sku/add', this.form)
+          if (res.status === 200) {
+            this.$message.success(res.msg)
+            this.getProductsList()
+          } else {
+            this.$message.error('添加规格失败', res.msg)
+          }
+        } else {
+          console.log('error submit!!')
+          return false
+        }
+      })
+    },
+    // Edit Sku/////////////////////////////////////////
+    editSku (sku) {
+      this.form = { ...sku }
+      this.editDialogVisible = true
+      console.log(sku)
+    },
+    async submitEditSku () {
+      this.$refs.editSkuruleForm.validate(async (valid) => {
+        if (valid) {
+          this.editDialogVisible = false
+          const { data: res } = await this.$HTTP.post('sku/update', this.form)
+          if (res.status === 200) {
+            this.$message.success(res.msg)
+            this.getProductsList()
+          } else {
+            this.$message.error('添加规格失败', res.msg)
+          }
+        } else {
+          console.log('error submit!!')
+          return false
+        }
+      })
+    },
+    // delete sku ////////////////////////////////////
+    async deleteSku (id) {
+      this.$confirm('此操作将永久删除该分类, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.confirmDeleteSku(id)
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        })
+      })
+    },
+    async confirmDeleteSku (id) {
+      const { data: res } = await this.$HTTP.post('sku/del', { id })
+      if (res.status === 200) {
+        this.$message.success(res.msg)
+        this.getProductsList()
+      } else {
+        this.$message.error('删除规格失败', res.msg)
+      }
     },
     // editItem////////////////////////////////////////
     editItem (val) {

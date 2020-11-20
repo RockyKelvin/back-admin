@@ -7,10 +7,10 @@
             <el-breadcrumb-item>商品管理</el-breadcrumb-item>
             <el-breadcrumb-item>发布商品</el-breadcrumb-item>
         </el-breadcrumb>
-    <!-- ///////////////////////////create house//////////////////////////////////////// -->
+    <!-- ///////////////////////////create product//////////////////////////////////////// -->
         <el-card class="box-card">
-           <el-form :model="form" label-width="100px">
-            <el-form-item label="商品分类" required>
+           <el-form :model="form" label-width="100px" :rules="rules" ref="ruleForm">
+            <el-form-item label="商品分类" prop="pid">
               <el-select v-model="form.pid" placeholder="请选择分类" @change="handleSelect">
                 <el-option-group
                     v-for="item in cateList"
@@ -27,13 +27,13 @@
                 </el-option-group>
               </el-select>
             </el-form-item>
-            <el-form-item label="商品名称" required>
+            <el-form-item label="商品名称" prop="title">
                <el-col :span="18"><el-input v-model="form.title"></el-input></el-col>
             </el-form-item>
-            <el-form-item label="商品价格" required>
-               <el-col :span="18"><el-input v-model="form.price"></el-input></el-col>
+            <el-form-item label="商品价格" prop="price">
+               <el-col :span="18"><el-input v-model.number="form.price"></el-input></el-col>
             </el-form-item>
-            <el-form-item label="商品描述">
+            <el-form-item label="商品描述" prop="description">
                 <el-input v-model="form.description"></el-input>
             </el-form-item>
             <el-form-item label="是否上架">
@@ -79,7 +79,24 @@ export default {
       formData: null,
       cateList: [],
       dialogImageUrl: '',
-      dialogVisible: false
+      dialogVisible: false,
+      rules: {
+        pid: [
+          { required: true, message: '请选择分类', trigger: 'blur' }
+        ],
+        title: [
+          { required: true, message: '请输入商品名称', trigger: 'blur' },
+          { min: 3, max: 30, message: '长度在 3 到 30 个字符', trigger: 'blur' }
+        ],
+        price: [
+          { required: true, message: '价格不能为空' },
+          { type: 'number', message: '价格必须为数字值' }
+        ],
+        description: [
+          { required: true, message: '请输入商品描述', trigger: 'blur' },
+          { min: 3, max: 300, message: '长度在 3 到 300 个字符', trigger: 'blur' }
+        ]
+      }
     }
   },
   methods: {
@@ -100,7 +117,17 @@ export default {
       this.formData.append('pic[]', pic.file)
       console.log('test', pic)
     },
-    async onCreate () {
+    onCreate () {
+      this.$refs.ruleForm.validate((valid) => {
+        if (valid) {
+          this.confirmOnCreate()
+        } else {
+          console.log('error submit!!')
+          return false
+        }
+      })
+    },
+    async confirmOnCreate () {
       this.formData = new FormData()
       this.formData.append('form', JSON.stringify(this.form))
       this.$refs.imgupload.submit()
