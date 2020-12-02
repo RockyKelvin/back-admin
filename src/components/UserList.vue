@@ -16,7 +16,8 @@
                 </el-col>
             </el-row>
             <div class="table">
-            <el-table
+              <el-table
+                v-loading="loading"
                 :data="userList"
                 border
                 stripe
@@ -108,14 +109,14 @@
                     label="修改日期"
                     width="200">
                 </el-table-column>
-            </el-table>
+              </el-table>
         <!-- //////分页器、、、、、、、、、、、、、、、、、、、、、、、、、、、、、//// -->
         <!-- 此例是一个完整的用例，使用了size-change和current-change
         事件来处理页码大小和当前页变动时候触发的事件。
         page-sizes接受一个整型数组，数组元素为展示的选择每页显示个数的选项，
         [100, 200, 300, 400]表示四个选项，每页显示 100 个，200 个，300 个
         或者 400 个。 -->
-            <div class="pages">
+              <div class="pages">
                 <el-pagination
                     @size-change="handleSizeChange"
                     @current-change="handleCurrentChange"
@@ -125,7 +126,7 @@
                     layout="total, sizes, prev, pager, next, jumper"
                     :total="total">
                 </el-pagination>
-            </div>
+              </div>
           </div>
         </el-card>
   </div>
@@ -140,7 +141,8 @@ export default {
       pagesize: 10,
       currentPage: 1,
       total: 0,
-      searchInput: ''
+      searchInput: '',
+      loading: true
     }
   },
   methods: {
@@ -156,7 +158,7 @@ export default {
     // update switch////////////////////////////////////////
     async updateSwitch (val) {
       const { id, status } = { ...val }
-      const { data: res } = await this.$HTTP.post('user/update', { id, status })
+      const { data: res } = await this.$HTTP.post('users/update', { id, status })
       console.log(res)
       if (res.status === 200) {
         this.$message.success(res.msg)
@@ -167,9 +169,16 @@ export default {
     },
     /// getUserList ////////////////////////////////////////////////////////////////////////
     async getUserList () {
-      const { data: res } = await this.$HTTP.post('user/list', { words: this.searchInput, page: this.currentPage, size: this.pagesize })
+      this.loading = true
+      const { data: res } = await this.$HTTP.post('users/list', { words: this.searchInput, page: this.currentPage, size: this.pagesize })
       this.total = res.users.total
       const userList = res.users.data
+      if (res.meta.status === 200) {
+        this.loading = false
+      } else {
+        this.$message.error('加载失败')
+        this.loading = false
+      }
       console.log(res)
       userList.forEach((item) => {
         item.status = item.status === 1

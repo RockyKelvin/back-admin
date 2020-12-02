@@ -59,21 +59,56 @@ const routes = [
         path: '/order_list',
         name: 'OrderList',
         component: () => import('../components/OrderList.vue')
+      },
+      {
+        path: '/admin_list',
+        name: 'AdminList',
+        component: () => import('../components/AdminList.vue')
+      },
+      {
+        path: '/permission_list',
+        name: 'PermissionList',
+        component: () => import('../components/PermissionList.vue')
+      },
+      {
+        path: '/role_list',
+        name: 'RoleList',
+        component: () => import('../components/RoleList.vue')
+      },
+      {
+        path: '/user_upload_icon',
+        name: 'UserUploadIcon',
+        component: () => import('../components/UserUploadIcon.vue')
+      },
+      {
+        path: '/user_reset_password',
+        name: 'UserResetPassword',
+        component: () => import('../components/UserResetPassword.vue')
       }
     ]
   },
   {
-    path: '/about',
-    name: 'About',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/About.vue')
+    path: '/login',
+    name: 'Login',
+    component: () => import('../views/Login.vue')
   }
 ]
 
 const router = new VueRouter({
   routes
 })
-
+router.beforeEach((to, from, next) => {
+  if (to.path === '/login') {
+    if (!sessionStorage.getItem('token')) {
+      return next()
+    } else {
+      return next(sessionStorage.getItem('selectedIndex'))
+    }
+  }
+  if (!sessionStorage.getItem('token')) {
+    next('/login')
+  } else {
+    next()
+  }
+})
 export default router

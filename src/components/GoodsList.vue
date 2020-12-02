@@ -41,6 +41,7 @@
             <!-- Products List////////////////////////////////////////////////////// -->
             <div class="table">
                 <el-table
+                  v-loading="loading"
                   :data="productsList"
                   stripe
                   border
@@ -222,6 +223,7 @@ export default {
       updateFormVisible: false,
       dialogVisible: false,
       editDialogVisible: false,
+      loading: true,
       form: {
         id: null,
         product_id: '',
@@ -253,7 +255,6 @@ export default {
   methods: {
     /// on search////////////////////////////////////////////
     handleSelect (id) {
-      console.log(id)
       this.currentPage = 1
       this.searchInput = ''
       this.getProductsList()
@@ -298,7 +299,6 @@ export default {
     editSku (sku) {
       this.form = { ...sku }
       this.editDialogVisible = true
-      console.log(sku)
     },
     async submitEditSku () {
       this.$refs.editSkuruleForm.validate(async (valid) => {
@@ -364,7 +364,6 @@ export default {
       const { id } = { ...val }
       const onSale = val.on_sale
       const { data: result } = await this.$HTTP.post('products/state', { id, on_sale: onSale })
-      console.log(result)
       if (result.meta.status === 200) {
         this.$message.success(result.meta.msg)
         this.getProductsList()
@@ -399,6 +398,7 @@ export default {
       this.$router.push('/create_product')
     },
     async getProductsList () {
+      this.loading = true
       const { data: res } = await this.$HTTP.post('products/list', {
         size: this.pagesize,
         page: this.currentPage,
@@ -407,7 +407,7 @@ export default {
       })
       this.productsList = res.data
       this.total = res.total
-      console.log(res)
+      this.loading = false
     },
     /// delete item///////////////////////////////////
     async deleteRow (id) {
@@ -452,7 +452,6 @@ export default {
       this.deletAllSelect = []
     },
     async deleteItem (id) {
-      console.log(id)
       const { data: result } = await this.$HTTP.post('products/del', { id })
       if (result.status === 200) {
         this.getProductsList()
@@ -464,7 +463,6 @@ export default {
     /// get cate list///////////////////////////////////////////////////
     async getCateList () {
       const { data: res } = await this.$HTTP.get('cate/list')
-      console.log(res)
       this.cateList = res
       this.cateList.unshift({
         title: '全部',

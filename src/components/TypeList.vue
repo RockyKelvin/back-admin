@@ -19,6 +19,7 @@
           <!-- Type List////////////////////////////////////////////////////// -->
         <div class="table">
          <el-table
+          v-loading="loading"
           :data="goodsList"
           border
           stripe
@@ -212,7 +213,8 @@ export default {
       formData: null,
       dialogFormVisible: false,
       updateFormVisible: false,
-      dropMenueTitle: '选择父节点'
+      dropMenueTitle: '选择父节点',
+      loading: true
     }
   },
   methods: {
@@ -261,7 +263,6 @@ export default {
       this.$refs.imgupload.submit()
       this.formData.append('form', JSON.stringify(this.form))
       const { data: res } = await this.$HTTP.post('cate/store', this.formData)
-      console.log(res)
       if (res.status === 200) {
         this.$message.success(res.msg)
       } else {
@@ -299,7 +300,6 @@ export default {
       this.updateFormVisible = true
       this.form = { ...item }
       this.fileList = []
-      console.log(this.form)
     },
     async getUpdate () {
       this.formData = new FormData()
@@ -355,8 +355,8 @@ export default {
       }
     },
     async getGoodsList () {
+      this.loading = true
       const { data: res } = await this.$HTTP.get('cate/list')
-      console.log(res)
       const goodsList = res
       goodsList.forEach(async (item) => {
         if (item.children.length > 0) {
@@ -367,6 +367,7 @@ export default {
         item.status = item.status === 1
       })
       this.goodsList = goodsList
+      this.loading = false
     }
   },
   created () {

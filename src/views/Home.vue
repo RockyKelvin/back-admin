@@ -22,7 +22,7 @@
             </el-col>
             <el-col :span="2">
               <div class="grid-content" >
-                <div class=logout><el-button size="mini" type="info">退出</el-button></div>
+                <div class=logout><el-button size="mini" type="info" @click="logout">退出</el-button></div>
               </div>
             </el-col>
         </el-row>
@@ -37,11 +37,12 @@
               router
               unique-opened
               :default-active="activeIndex"
+              @select = "selectedIndex"
               class="el-menu-vertical-demo"
               background-color="#545c64"
               text-color="#fff"
               active-text-color="#ffd04b">
-              <el-submenu v-for="listItem in menuList" :key="listItem.id" :index="`${listItem.id}`">
+              <el-submenu v-for="listItem in menuList" :key="listItem.id" :index="listItem.id+''">
                 <template slot="title">
                   <i :class="listItem.icon"></i>
                   <span>{{listItem.name}}</span>
@@ -67,78 +68,23 @@
 </template>
 
 <script>
+import Bus from '../bus'
 export default {
   name: 'Home',
   data () {
     return {
       username: '',
       userIcon: '',
-      menuList: [
-        {
-          name: '数据',
-          id: 1,
-          pid: 0,
-          children: [
-            {
-              name: '数据列表',
-              pid: 1,
-              path: 'data_list'
-            }
-          ]
-        },
-        {
-          name: '商品',
-          icon: '',
-          pid: 0,
-          id: 2,
-          path: '',
-          children: [
-            {
-              name: '分类管理',
-              pid: 2,
-              path: 'type_list'
-            },
-            {
-              name: '商品管理',
-              pid: 2,
-              path: 'goods_list'
-            },
-            {
-              name: '管理管理',
-              pid: 2,
-              path: 'sku_list'
-            }
-          ]
-        },
-        {
-          name: '会员',
-          id: 3,
-          pid: 0,
-          children: [
-            {
-              name: '会员管理',
-              pid: 3,
-              path: 'user_list'
-            },
-            {
-              name: '订单管理',
-              pid: 3,
-              path: 'order_list'
-            },
-            {
-              name: '团长管理',
-              pid: 3,
-              path: 'team_leader'
-            }
-          ]
-        }
-      ],
-      activeIndex: 'type_list',
+      menuList: [],
+      activeIndex: '',
       isCollapsed: false,
       asideWidth: '200px'
     }
   },
   methods: {
+    selectedIndex (index) {
+      sessionStorage.setItem('selectedIndex', index)
+    },
     menuCollapse () {
       this.isCollapsed = !this.isCollapsed
       if (this.isCollapsed === false) {
@@ -146,16 +92,44 @@ export default {
       } else if (this.isCollapsed === true) {
         this.asideWidth = '65px'
       }
+    },
+    logout () {
+      sessionStorage.removeItem('selectedIndex')
+      sessionStorage.removeItem('token')
+      this.$router.push('/login')
+    },
+    async getMenuList () {
+      const { data: res } = await this.$HTTP.post('permission/menus')
+      this.menuList = res.data
+      console.log('home-----', res)
     }
+  },
+  created () {
+    Bus.$on('avatar', avatar => {
+      this.userIcon = avatar
+    })
+    if (sessionStorage.getItem('selectedIndex')) {
+      this.activeIndex = sessionStorage.getItem('selectedIndex')
+    } else {
+      this.activeIndex = 'type_list'
+    }
+    this.username = sessionStorage.getItem('username')
+    this.userIcon = sessionStorage.getItem('user_icon')
+    this.getMenuList()
   }
 }
 </script>
 <style lang="less" scoped>
-.el-aside{
+.el-aside {
   min-width:65px;
+  background-color: #545c64;
+  color: #333;
+  text-align: left;
+  line-height: 200px;
 }
 .el-menu {
     border-right: 0px;
+    height: 100vh;
 }
 .title{
   width: 100px;
@@ -225,14 +199,6 @@ export default {
   text-align: center;
   line-height: 60px;
 }
-
-.el-aside {
-  background-color: #545c64;
-  color: #333;
-  text-align: center;
-  line-height: 200px;
-}
-
 .el-main {
   background-color: #E9EEF3;
   color: #333;
@@ -264,6 +230,6 @@ export default {
   padding: 18px 0;
 }
 .el-main {
-line-height: 100%;
+  line-height: 100%;
 }
 </style>
